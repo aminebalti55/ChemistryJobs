@@ -7,6 +7,7 @@ import time
 import threading
 from typing import Optional
 from job_scraper import initialize_db, update_jobs, KEYWORDS
+import uvicorn
 
 # Before creating the FastAPI app
 try:
@@ -184,4 +185,6 @@ def get_keywords():
     return {"keywords": KEYWORDS}
 
 
-
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
