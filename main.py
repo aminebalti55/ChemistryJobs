@@ -105,7 +105,11 @@ app = FastAPI(lifespan=lifespan)
 # Enable CORS for React frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Match your React frontend URL
+     allow_origins=[
+        "http://localhost:3000", 
+        "https://nchallababytel9a5edma.netlify.app"  # Add your actual Netlify site URL
+    ],
+    
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
