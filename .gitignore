@@ -1,0 +1,22 @@
+# Python virtual environment
+.venv/
+__pycache__/
+
+# Notebook checkpoints
+.ipynb_checkpoints/
+
+# SQLite database
+jobs.db
+
+# Deployment or configuration files
+*.env
+*.log
+
+# Node.js (if included in the frontend)
+job-frontend/node_modules/
+job-frontend/build/
+
+# IDE and editor-specific files
+.vscode/
+.idea/
+.DS_Store
