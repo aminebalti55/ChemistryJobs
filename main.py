@@ -8,6 +8,7 @@ import threading
 from typing import Optional
 from job_scraper import initialize_db, update_jobs, KEYWORDS
 import uvicorn
+from fastapi.responses import JSONResponse
 
 # Before creating the FastAPI app
 try:
@@ -121,9 +122,9 @@ class Job(BaseModel):
     status: str
     is_clicked: bool = False  # Add this line
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 def read_root():
-    return {"message": "Welcome to the Job Scraper API!"}
+    return JSONResponse({"message": "Welcome to the Job Scraper API!"})
 
 
 @app.post("/mark-job-clicked")
