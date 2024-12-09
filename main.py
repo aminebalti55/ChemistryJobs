@@ -121,6 +121,10 @@ class Job(BaseModel):
     status: str
     is_clicked: bool = False  # Add this line
 
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to the Job Scraper API!"}
+
 
 @app.post("/mark-job-clicked")
 def mark_job_clicked(job_data: dict):
