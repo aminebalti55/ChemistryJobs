@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import time
 import re
 import logging
+from datetime import datetime, timedelta
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s: %(message)s')
@@ -380,6 +381,30 @@ def save_job_to_db(title, link, publish_date, location, experience, description,
     finally:
         conn.close()
 
+def update_jobs_with_logging():
+    try:
+        # Existing update_jobs logic
+        update_jobs()
+        
+        # Log successful update
+        conn = sqlite3.connect(DB_FILE)
+        c = conn.cursor()
+        c.execute('''
+        CREATE TABLE IF NOT EXISTS update_log (
+            last_update DATETIME
+        )
+        ''')
+        c.execute('INSERT INTO update_log (last_update) VALUES (?)', 
+                  (datetime.now().strftime('%Y-%m-%d %H:%M:%S'),))
+        conn.commit()
+        conn.close()
+        
+        logging.info("Job update completed successfully")
+    except Exception as e:
+        logging.error(f"Job update failed: {e}")
+        raise
+    
+    
 def update_jobs():
     """
     Enhanced job update process with more robust error handling
@@ -409,7 +434,11 @@ def update_jobs():
 
 if __name__ == "__main__":
     initialize_db()
+    update_jobs_with_logging()
+
+
     while True:
+        
         update_jobs()
         logging.info("Job list updated. Sleeping for 24 hours...")
         time.sleep(86400)
