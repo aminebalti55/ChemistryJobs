@@ -10,17 +10,15 @@ from job_scraper import initialize_db, update_jobs, KEYWORDS
 import uvicorn
 from fastapi.responses import JSONResponse
 
-# Before creating the FastAPI app
 try:
     initialize_db()
     print("Database initialized successfully")
 except Exception as e:
     print(f"Failed to initialize database: {e}")
     
-import os  # Add this import
+import os  
 
-DB_FILE = "jobs.db"  # Confirm this is defined before the function
-# Initialize the database
+DB_FILE = "jobs.db"  
 initialize_db()
 
 # Create the FastAPI app
@@ -41,28 +39,27 @@ def lifespan(app: FastAPI):
 
     start_job_updater()
     yield
-    print("Shutting down application.")  # Debug log
+    print("Shutting down application.")  
 
 
 app = FastAPI(lifespan=lifespan)
 
-# Enable CORS for React frontend
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Match your React frontend URL
+    allow_origins=["http://localhost:3000"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Models for API Input/Output
 class Job(BaseModel):
     title: str
     link: str
     publish_date: str
     location: str
     experience: str
-    description: Optional[str]  # Allow None values
+    description: Optional[str]  
     status: str
 
 from fastapi import FastAPI, HTTPException
