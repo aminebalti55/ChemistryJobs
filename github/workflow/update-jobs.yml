@@ -1,0 +1,38 @@
+name: Update Job List and Deploy to Render
+
+on:
+  schedule:
+    # Runs every day at 3 AM UTC
+    - cron: '0 3 * * *'
+  workflow_dispatch:  # Allows manual triggering
+
+jobs:
+  update-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.9'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run Job Scraper
+      run: python job_scraper.py
+    
+    - name: Deploy to Render
+      env:
+        RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+        RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+      run: |
+        # Install Render CLI
+        pip install render-cli
+        
+        # Trigger a new deployment
+        render service list --api-key $RENDER_API_KEY
+        render deploy $RENDER_SERVICE_ID --api-key $RENDER_API_KEY
