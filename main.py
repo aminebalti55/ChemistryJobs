@@ -104,7 +104,8 @@ app.add_middleware(
     CORSMiddleware,
      allow_origins=[
         "http://localhost:3000", 
-        "https://nchallababytel9a5edma.netlify.app"  # Add your actual Netlify site URL
+        "https://nchallababytel9a5edma.netlify.app"  # Add your actual Netlify site URL,
+        "https://nchallahbabytel9a5edma.netlify.app"
     ],
     
     allow_credentials=True,
