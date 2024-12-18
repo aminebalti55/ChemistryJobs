@@ -366,7 +366,7 @@ def save_job_to_db(title, link, publish_date, location, experience, description,
         is_old = days_since_published > 15
         
         c.execute('''
-        INSERT OR IGNORE INTO jobs (
+        INSERT OR REPLACE INTO jobs (
             title, link, publish_date, location, experience, 
             description, status, added_date, is_new, is_old
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -409,6 +409,7 @@ def update_jobs():
     """
     Enhanced job update process with more robust error handling
     """
+    logging.info("Starting job update process...")
     all_keywords = set(
         KEYWORDS['core'] + 
         KEYWORDS['specializations'] + 
@@ -416,6 +417,7 @@ def update_jobs():
         KEYWORDS['domains']
     )
 
+    total_jobs_added = 0
     for keyword in all_keywords:
         try:
             logging.info(f"Processing keyword: {keyword}")
@@ -428,9 +430,12 @@ def update_jobs():
 
             for job in filtered_jobs:
                 save_job_to_db(*job, "new")
+                total_jobs_added += 1
 
         except Exception as e:
             logging.error(f"Error processing keyword {keyword}: {e}")
+
+    logging.info(f"Job update complete. Total new jobs added: {total_jobs_added}")
 
 if __name__ == "__main__":
     initialize_db()

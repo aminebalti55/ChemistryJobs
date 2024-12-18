@@ -185,6 +185,13 @@ def get_keywords():
     """
     return {"keywords": KEYWORDS}
 
+@app.get("/update-jobs")
+def trigger_job_update():
+    try:
+        update_jobs()
+        return {"status": "Jobs updated successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Job update failed: {str(e)}")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
