@@ -99,15 +99,9 @@ def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-# Enable CORS for React frontend
 app.add_middleware(
     CORSMiddleware,
-     allow_origins=[
-        "http://localhost:3000", 
-        "https://nchallababytel9a5edma.netlify.app"  # Add your actual Netlify site URL,
-        "https://nchallahbabytel9a5edma.netlify.app"
-    ],
-    
+    allow_origins=["*"],  # Use this temporarily for testing
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
