@@ -65,7 +65,14 @@ BASE_URLS = {
     "tunisietravail": "https://www.tunisietravail.net/search/{query}"
 }
 
-HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Connection": "keep-alive",
+    "Upgrade-Insecure-Requests": "1"
+}
 
 # In database initialization
 def initialize_db():
@@ -243,38 +250,67 @@ def fetch_job_details(url, site):
 
 def fetch_jobs_from_optioncarriere(keyword):
     url = BASE_URLS["optioncarriere"].format(query=keyword)
-    response = requests.get(url, headers=HEADERS)
-    soup = BeautifulSoup(response.text, "html.parser")
-    jobs = []
+    try:
+        # Add timeout and retries
+        session = requests.Session()
+        retry_strategy = requests.adapters.Retry(
+            total=3,  # number of retries
+            backoff_factor=1,  # wait 1, 2, 4 seconds between retries
+            status_forcelist=[500, 502, 503, 504]
+        )
+        adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
+        session.mount("http://", adapter)
+        session.mount("https://", adapter)
+        
+        response = session.get(
+            url, 
+            headers=HEADERS,
+            timeout=(10, 30)  # (connect timeout, read timeout)
+        )
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, "html.parser")
+        jobs = []
 
-    for job in soup.find_all("article", class_="job"):
-        try:
-            title_tag = job.find("h2").find("a")
-            if not title_tag:
+        for job in soup.find_all("article", class_="job"):
+            try:
+                title_tag = job.find("h2").find("a")
+                if not title_tag:
+                    continue
+                title = title_tag.text.strip()
+                link = f"https://www.optioncarriere.tn{title_tag['href']}"
+
+                location_section = job.find("ul", class_="location")
+                location = "N/A"
+                if location_section:
+                    location_candidates = [li.text.strip() for li in location_section.find_all("li")]
+                    location = next((loc for loc in location_candidates if loc), "N/A")
+
+                publish_date_section = job.find("span", class_="badge")
+                publish_date = "N/A"
+                if publish_date_section:
+                    relative_time = publish_date_section.text.strip()
+                    publish_date = parse_relative_date(relative_time)
+
+                desc_section = job.find("div", class_="desc")
+                description = desc_section.text.strip() if desc_section else "N/A"
+
+                jobs.append((title, link, publish_date, location, "N/A", description))
+                
+            except Exception as e:
+                logging.error(f"Error parsing individual job from optioncarriere: {e}")
                 continue
-            title = title_tag.text.strip()
-            link = f"https://www.optioncarriere.tn{title_tag['href']}"
 
-            location_section = job.find("ul", class_="location")
-            location = "N/A"
-            if location_section:
-                location_candidates = [li.text.strip() for li in location_section.find_all("li")]
-                location = next((loc for loc in location_candidates if loc), "N/A")
+        return jobs
 
-            publish_date_section = job.find("span", class_="badge")
-            publish_date = "N/A"
-            if publish_date_section:
-                relative_time = publish_date_section.text.strip()
-                publish_date = parse_relative_date(relative_time)
-
-            desc_section = job.find("div", class_="desc")
-            description = desc_section.text.strip() if desc_section else "N/A"
-
-            jobs.append((title, link, publish_date, location, "N/A", description))
-        except Exception as e:
-            logging.error(f"Error parsing job card from optioncarriere: {e}")
-
-    return jobs
+    except requests.exceptions.Timeout:
+        logging.error(f"Timeout while fetching jobs for keyword '{keyword}' from optioncarriere.tn")
+        return []
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Error fetching jobs for keyword '{keyword}' from optioncarriere.tn: {e}")
+        return []
+    except Exception as e:
+        logging.error(f"Unexpected error while processing keyword '{keyword}' from optioncarriere.tn: {e}")
+        return []
 
 def fetch_jobs_from_tunisietravail(keyword):
     url = BASE_URLS["tunisietravail"].format(query=keyword)
