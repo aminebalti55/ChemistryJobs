@@ -6,6 +6,7 @@ import time
 import re
 import logging
 from datetime import datetime, timedelta
+import backoff  # Add this import
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s: %(message)s')
@@ -74,6 +75,38 @@ HEADERS = {
     "Upgrade-Insecure-Requests": "1"
 }
 
+def create_session():
+    session = requests.Session()
+    retry_strategy = requests.adapters.Retry(
+        total=5,  # Increase total retries
+        backoff_factor=2,  # Increase backoff time between retries
+        status_forcelist=[500, 502, 503, 504],
+        allowed_methods=["HEAD", "GET", "POST"]
+    )
+    adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+    return session
+
+# Add exponential backoff decorator for request functions
+@backoff.on_exception(
+    backoff.expo,
+    (requests.exceptions.RequestException, requests.exceptions.Timeout),
+    max_tries=5
+)
+def make_request(url, session=None, timeout=(30, 30)):
+    """
+    Make HTTP request with retries and backoff
+    """
+    if session is None:
+        session = create_session()
+    try:
+        response = session.get(url, headers=HEADERS, timeout=timeout)
+        response.raise_for_status()
+        return response
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Request failed for {url}: {str(e)}")
+        raise
 # In database initialization
 def initialize_db():
     try:
@@ -249,143 +282,151 @@ def fetch_job_details(url, site):
     return description, publish_date, location, experience
 
 def fetch_jobs_from_optioncarriere(keyword):
+    """Enhanced optioncarriere job fetching with better error handling"""
     url = BASE_URLS["optioncarriere"].format(query=keyword)
+    logging.info(f"Fetching jobs from optioncarriere for keyword: {keyword}")
+    
     try:
-        # Add timeout and retries
-        session = requests.Session()
-        retry_strategy = requests.adapters.Retry(
-            total=3,  # number of retries
-            backoff_factor=1,  # wait 1, 2, 4 seconds between retries
-            status_forcelist=[500, 502, 503, 504]
-        )
-        adapter = requests.adapters.HTTPAdapter(max_retries=retry_strategy)
-        session.mount("http://", adapter)
-        session.mount("https://", adapter)
-        
-        response = session.get(
-            url, 
-            headers=HEADERS,
-            timeout=(10, 30)  # (connect timeout, read timeout)
-        )
-        response.raise_for_status()
+        session = create_session()
+        response = make_request(url, session)
         soup = BeautifulSoup(response.text, "html.parser")
         jobs = []
 
-        for job in soup.find_all("article", class_="job"):
+        job_listings = soup.find_all("article", class_="job")
+        logging.info(f"Found {len(job_listings)} potential jobs for '{keyword}' on optioncarriere")
+
+        for job in job_listings:
             try:
                 title_tag = job.find("h2").find("a")
                 if not title_tag:
                     continue
+                
                 title = title_tag.text.strip()
                 link = f"https://www.optioncarriere.tn{title_tag['href']}"
+                logging.info(f"Processing job: {title}")
 
                 location_section = job.find("ul", class_="location")
-                location = "N/A"
-                if location_section:
-                    location_candidates = [li.text.strip() for li in location_section.find_all("li")]
-                    location = next((loc for loc in location_candidates if loc), "N/A")
+                location = location_section.find("li").text.strip() if location_section else "N/A"
 
                 publish_date_section = job.find("span", class_="badge")
-                publish_date = "N/A"
+                publish_date = datetime.now().date()
                 if publish_date_section:
-                    relative_time = publish_date_section.text.strip()
-                    publish_date = parse_relative_date(relative_time)
+                    publish_date = parse_relative_date(publish_date_section.text.strip())
 
                 desc_section = job.find("div", class_="desc")
                 description = desc_section.text.strip() if desc_section else "N/A"
 
                 jobs.append((title, link, publish_date, location, "N/A", description))
-                
+                logging.info(f"Successfully processed: {title} | Location: {location}")
+
             except Exception as e:
-                logging.error(f"Error parsing individual job from optioncarriere: {e}")
+                logging.error(f"Error parsing job from optioncarriere: {str(e)}")
                 continue
 
         return jobs
 
-    except requests.exceptions.Timeout:
-        logging.error(f"Timeout while fetching jobs for keyword '{keyword}' from optioncarriere.tn")
-        return []
-    except requests.exceptions.RequestException as e:
-        logging.error(f"Error fetching jobs for keyword '{keyword}' from optioncarriere.tn: {e}")
-        return []
     except Exception as e:
-        logging.error(f"Unexpected error while processing keyword '{keyword}' from optioncarriere.tn: {e}")
+        logging.error(f"Failed to fetch jobs from optioncarriere for '{keyword}': {str(e)}")
         return []
 
 def fetch_jobs_from_tunisietravail(keyword):
+    """Enhanced tunisietravail job fetching"""
     url = BASE_URLS["tunisietravail"].format(query=keyword)
-    response = requests.get(url, headers=HEADERS)
-    soup = BeautifulSoup(response.text, "html.parser")
-    jobs = []
-    one_month_ago = (datetime.now() - timedelta(days=30)).date()
+    logging.info(f"Fetching jobs from tunisietravail for keyword: {keyword}")
+    
+    try:
+        session = create_session()
+        response = make_request(url, session)
+        soup = BeautifulSoup(response.text, "html.parser")
+        jobs = []
 
-    for job in soup.find_all("div", class_="Post"):
-        try:
-            date_section = job.find("p", class_="PostDateIndexRed")
-            if date_section:
-                month_tag = date_section.find("strong", class_="month")
-                if month_tag:
-                    publish_date = parse_relative_date(month_tag.text.strip())
-                    
-                    # Strict date filtering
-                    if publish_date < one_month_ago:
-                        continue
+        job_listings = soup.find_all("div", class_="Post")
+        logging.info(f"Found {len(job_listings)} potential jobs for '{keyword}' on tunisietravail")
 
-                    title_tag = job.find("a", class_="h1titleall")
-                    if not title_tag:
-                        continue
-                    
-                    title = title_tag.text.strip()
-                    link = title_tag["href"]
+        for job in job_listings:
+            try:
+                title_tag = job.find("a", class_="h1titleall")
+                if not title_tag:
+                    continue
 
-                    location_section = job.find("p", class_="PostInfo")
-                    location = "N/A"
-                    if location_section:
-                        location_links = location_section.find_all("a")
-                        possible_locations = [
-                            link.get_text(strip=True)
-                            for link in location_links
-                            if "category" not in link.get('href', '')
-                        ]
-                        location = possible_locations[0] if possible_locations else "N/A"
+                title = title_tag.text.strip()
+                link = title_tag["href"]
+                logging.info(f"Processing job: {title}")
 
-                    description, _, _, experience = fetch_job_details(link, "tunisietravail")
-                    jobs.append((title, link, publish_date.strftime("%Y-%m-%d"), location, experience, description))
-        except Exception as e:
-            logging.error(f"Error parsing job from tunisietravail: {e}")
+                date_section = job.find("p", class_="PostDateIndexRed")
+                publish_date = datetime.now().date()
+                if date_section:
+                    month_tag = date_section.find("strong", class_="month")
+                    if month_tag:
+                        publish_date = parse_relative_date(month_tag.text.strip())
 
-    return jobs
+                location_section = job.find("p", class_="PostInfo")
+                location = "N/A"
+                if location_section:
+                    location_links = [link for link in location_section.find_all("a") 
+                                    if "category" not in link.get('href', '')]
+                    if location_links:
+                        location = location_links[0].text.strip()
+
+                description, _, _, experience = fetch_job_details(link, "tunisietravail")
+                jobs.append((title, link, publish_date.strftime("%Y-%m-%d"), location, experience, description))
+                logging.info(f"Successfully processed: {title} | Location: {location}")
+
+            except Exception as e:
+                logging.error(f"Error parsing job from tunisietravail: {str(e)}")
+                continue
+
+        return jobs
+
+    except Exception as e:
+        logging.error(f"Failed to fetch jobs from tunisietravail for '{keyword}': {str(e)}")
+        return []
 
 def fetch_jobs_from_keejob(keyword):
+    """Enhanced keejob job fetching"""
     url = BASE_URLS["keejob"].format(query=keyword)
-    response = requests.get(url, headers=HEADERS)
-    soup = BeautifulSoup(response.text, "html.parser")
-    jobs = []
+    logging.info(f"Fetching jobs from keejob for keyword: {keyword}")
+    
+    try:
+        session = create_session()
+        response = make_request(url, session)
+        soup = BeautifulSoup(response.text, "html.parser")
+        jobs = []
 
-    for job in soup.find_all("div", class_="block_white_a"):
-        try:
-            title_tag = job.find("a", style=True)
-            if not title_tag:
+        job_listings = soup.find_all("div", class_="block_white_a")
+        logging.info(f"Found {len(job_listings)} potential jobs for '{keyword}' on keejob")
+
+        for job in job_listings:
+            try:
+                title_tag = job.find("a", style=True)
+                if not title_tag:
+                    continue
+
+                title = title_tag.text.strip()
+                link = f"https://www.keejob.com{title_tag['href']}"
+                logging.info(f"Processing job: {title}")
+
+                location_tag = job.find("i", class_="fa-map-marker")
+                location = location_tag.next_sibling.strip() if location_tag else "N/A"
+
+                date_tag = job.find("i", class_="fa-clock-o")
+                publish_date = datetime.now().date()
+                if date_tag and date_tag.next_sibling:
+                    publish_date = parse_relative_date(date_tag.next_sibling.strip())
+
+                description, _, _, experience = fetch_job_details(link, "keejob")
+                jobs.append((title, link, publish_date, location, experience, description))
+                logging.info(f"Successfully processed: {title} | Location: {location}")
+
+            except Exception as e:
+                logging.error(f"Error parsing job from keejob: {str(e)}")
                 continue
-            title = title_tag.text.strip()
-            link = f"https://www.keejob.com{title_tag['href']}"
 
-            location_tag = job.find("i", class_="fa-map-marker")
-            location = "N/A"
-            if location_tag and location_tag.next_sibling:
-                location = location_tag.next_sibling.strip()
+        return jobs
 
-            date_tag = job.find("i", class_="fa-clock-o")
-            publish_date = "N/A"
-            if date_tag and date_tag.next_sibling:
-                publish_date = parse_relative_date(date_tag.next_sibling.strip())
-
-            description, _, _, experience = fetch_job_details(link, "keejob")
-            jobs.append((title, link, publish_date, location, experience, description))
-        except Exception as e:
-            logging.error(f"Error parsing job from keejob: {e}")
-
-    return jobs
+    except Exception as e:
+        logging.error(f"Failed to fetch jobs from keejob for '{keyword}': {str(e)}")
+        return []
 
 def save_job_to_db(title, link, publish_date, location, experience, description, status):
     try:
@@ -442,9 +483,7 @@ def update_jobs_with_logging():
     
     
 def update_jobs():
-    """
-    Enhanced job update process with more robust error handling
-    """
+    """Enhanced job update process with detailed logging"""
     logging.info("Starting job update process...")
     all_keywords = set(
         KEYWORDS['core'] + 
@@ -454,6 +493,9 @@ def update_jobs():
     )
 
     total_jobs_added = 0
+    total_jobs_processed = 0
+    failed_keywords = []
+
     for keyword in all_keywords:
         try:
             logging.info(f"Processing keyword: {keyword}")
@@ -462,7 +504,10 @@ def update_jobs():
             jobs_keejob = fetch_jobs_from_keejob(keyword)
 
             all_jobs = jobs_optioncarriere + jobs_tunisietravail + jobs_keejob
+            total_jobs_processed += len(all_jobs)
+            
             filtered_jobs = filter_jobs(all_jobs)
+            logging.info(f"Found {len(filtered_jobs)} relevant jobs for keyword '{keyword}'")
 
             for job in filtered_jobs:
                 save_job_to_db(*job, "new")
@@ -470,8 +515,13 @@ def update_jobs():
 
         except Exception as e:
             logging.error(f"Error processing keyword {keyword}: {e}")
+            failed_keywords.append(keyword)
 
-    logging.info(f"Job update complete. Total new jobs added: {total_jobs_added}")
+    logging.info("Job update summary:")
+    logging.info(f"Total jobs processed: {total_jobs_processed}")
+    logging.info(f"Total jobs added: {total_jobs_added}")
+    if failed_keywords:
+        logging.warning(f"Failed keywords: {', '.join(failed_keywords)}")
 
 if __name__ == "__main__":
     initialize_db()
