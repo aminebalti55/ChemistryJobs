@@ -14,49 +14,142 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s: %(m
 DB_FILE = "jobs.db"
 
 # Expanded and refined keywords for chemistry jobs
-KEYWORDS = {
-    "core": [
-        "chimiste", "chemist", "chimie", "chemistry"
-    ],
-    "specializations": [
-        "chimie analytique", "analytical chemistry", 
-        "chimie organique", "organic chemistry",
-        "chimie des matériaux", "materials chemistry",
-        "chimie alimentaire", "food chemistry",
-        "chimie pharmaceutique", "pharmaceutical chemistry",
-        "chimie environnementale", "environmental chemistry", "instrumentation", "validation de processus", 
-        "contrôle qualité", "quality control",
-        "analyse environnementale", "environmental analysis",
-        "biochimie", "biochemistry","traitement des eaux", "water treatment",
-        "purification d'eau", "water purification",
-        "gestion des eaux", "water management",
-        "analyse des eaux", "water analysis",  "hse", "qhse", "health safety environment",
-        "qualité hygiène sécurité environnement"
-    ],
-    "job_titles": [
-        "chimiste", "chemist",
-        "technicien chimie", "chemistry technician",
-        "analyste chimique", "chemical analyst",
-        "ingénieur chimie", "chemical engineer",
-        "chercheur chimie", "chemistry researcher", "contrôle qualité", "quality control specialist" ,"expert traitement des eaux", "water treatment specialist",
-        "ingénieur eau", "water engineer","hse","qhse", "responsable hse", "hse manager",
-        "chargé qhse", "qhse officer"
+EXCLUDED_KEYWORDS = {
+    # Other fields to exclude
+    "développeur", "developer", "programmer", "software engineer",
+    "web developer", "full stack", "frontend", "backend",
+    "technicien maintenance", "helpdesk", "support technique",
+    
+    # Business/Finance/Admin roles
+    "comptable", "accountant", "finance", "audit", "commercial", 
+    "marketing", "sales", "gestionnaire", "consultant fonctionnel",
+    "administrative", "assistant", "secrétaire", "receptionist",
+    "ressources humaines", "hr", "human resources",
+    
+    # Senior/Lead positions (keeping some flexibility for mid-level positions)
+    "senior", "sénior", "pfe", "10 ans", "8 ans", "7 ans",
+    "chef département", "directeur technique", "directeur usine",
+    "head of department", "technical director", "plant director"
+}
 
+KEYWORDS = {
+    'core': [
+        # Primary chemistry roles (expanded)
+        "chimiste", "chemist", "ingénieur chimiste", "chemical engineer",
+        "analyste chimique", "chemical analyst", "laboratoire", "laboratory",
+        "technicien laboratoire", "lab technician", "ingénieur procédés",
+        "process engineer", "ingénieur qualité", "quality engineer",
+        "ingénieur production", "production engineer",
+        "scientifique", "scientist", "chercheur", "researcher",
+        "analyste", "analyst", "technicien", "technician",
+        "spécialiste", "specialist", "expert technique", "technical expert",
+        "formulateur", "formulator", "développeur produit", "product developer"
     ],
-    "domains": [
+    'specializations': [
+        # Analytical techniques (expanded)
+        "chimie analytique", "analytical chemistry",
+        "HPLC", "chromatographie", "chromatography",
+        "spectroscopie", "spectroscopy", "IR", "RMN", "NMR",
+        "MEB", "SEM", "EDX", "rayons X", "X-ray",
+        "ATG", "ATD", "DSC", "GC", "TLC", "LC-MS", "GC-MS",
+        "microscopie", "microscopy", "UV-Vis", "ICP", "ICP-MS",
+        "DRX", "XRD", "XRF", "fluorescence X",
+        "analyse élémentaire", "elemental analysis",
+        "AA", "absorption atomique", "atomic absorption",
+        "électrochimie", "electrochemistry",
+        
+        # Chemistry fields (expanded)
+        "chimie organique", "organic chemistry",
+        "chimie inorganique", "inorganic chemistry",
+        "chimie physique", "physical chemistry",
+        "biochimie", "biochemistry", "biotechnologie", "biotechnology",
+        "polymères", "polymers", "plasturgie", "plastics",
+        "chimie des matériaux", "materials chemistry",
+        "génie chimique", "chemical engineering",
+        "chimie industrielle", "industrial chemistry",
+        "chimie analytique", "analytical chemistry",
+        "chimie verte", "green chemistry",
+        "nanotechnologie", "nanotechnology",
+        
+        # Techniques and processes
+        "validation", "contrôle qualité", "quality control",
+        "assurance qualité", "quality assurance",
+        "ISO 17025", "ISO 9001", "ISO 14001", "GMP", "BPF",
+        "accréditation", "certification", "normalisation",
+        "étalonnage", "calibration", "métrologie", "metrology",
+        "BPL", "GLP", "pharmacopée", "pharmacopoeia",
+        
+        # Environmental and safety
+        "traitement des eaux", "water treatment",
+        "analyse environnementale", "environmental analysis",
+        "HSE", "hygiène", "sécurité", "environnement",
+        "développement durable", "sustainable development",
+        "gestion des déchets", "waste management",
+        "protection environnement", "environmental protection",
+        "QHSE", "QSE", "HSE", "EHS"
+    ],
+    'job_titles': [
+        # Specific job titles (expanded)
+        "ingénieur chimiste", "chemical engineer",
+        "analyste laboratoire", "laboratory analyst",
+        "technicien laboratoire", "lab technician",
+        "responsable laboratoire", "lab manager",
+        "ingénieur procédés", "process engineer",
+        "ingénieur qualité", "quality engineer",
+        "chimiste R&D", "R&D chemist",
+        "ingénieur validation", "validation engineer",
+        "ingénieur production", "production engineer",
+        "analyste contrôle qualité", "quality control analyst",
+        "formulateur", "formulation scientist",
+        "ingénieur développement", "development engineer",
+        "ingénieur application", "application engineer",
+        "ingénieur projet", "project engineer",
+        "technicien analyse", "analytical technician",
+        "technicien recherche", "research technician",
+        "assistant laboratoire", "lab assistant",
+        "chargé de recherche", "research associate",
+        "responsable qualité", "quality manager",
+        "coordinateur laboratoire", "lab coordinator",
+        "specialist assurance qualité", "quality assurance specialist"
+    ],
+    'domains': [
+        # Industry domains (expanded)
+        "industrie pharmaceutique", "pharmaceutical",
+        "industrie chimique", "chemical industry",
+        "agroalimentaire", "food industry",
+        "cosmétique", "cosmetics", "cosmétologie", "cosmetology",
+        "pétrochimie", "petrochemical",
+        "matériaux", "materials",
+        "peintures", "coatings",
+        "plastiques", "plastics",
+        "textile", "textile",
+        "environnement", "environmental",
+        "energie", "energy",
+        "métallurgie", "metallurgy",
+        "cimenterie", "cement",
+        "céramique", "ceramics",
+        "détergents", "detergents",
+        "adhésifs", "adhesives",
+        "emballage", "packaging",
+        "traitement surface", "surface treatment",
+        "traitement eau", "water treatment",
+        
+        # Function areas
+        "métrologie", "metrology",
+        "instrumentation", "instrumentation",
+        "R&D", "recherche", "research",
+        "production", "manufacturing",
+        "qualité", "quality",
+        "analyse", "analysis",
         "laboratoire", "laboratory",
-        "recherche chimique", "chemical research",
-        "contrôle qualité chimique", "chemical quality control",
-        "analyse chimique", "chemical analysis",
-        "spectroscopie", "spectroscopy",
-        "chromatographie", "chromatography",
-        "microscope électronique", "electron microscope",
-        "analyse des eaux", "water analysis",
-        "émissions industrielles", "industrial emissions",
-        "analyse médicale", "medical analysis",
-        "hse", "health safety environment","gestion environnementale", "environmental management",
-        "recyclage des eaux", "water recycling", "qualité hygiène sécurité", "quality hygiene safety",
-        "management environnemental", "environmental management" 
+        "validation", "validation",
+        "contrôle", "control",
+        "développement", "development",
+        "formulation", "formulation",
+        "caractérisation", "characterization",
+        "synthèse", "synthesis",
+        "pilote", "pilot", "scale-up",
+        "optimisation", "optimization"
     ]
 }
 
@@ -112,6 +205,8 @@ def initialize_db():
     try:
         conn = sqlite3.connect(DB_FILE)
         c = conn.cursor()
+        
+        # Create jobs table with application tracking
         c.execute('''
         CREATE TABLE IF NOT EXISTS jobs (
             id INTEGER PRIMARY KEY,
@@ -125,54 +220,232 @@ def initialize_db():
             added_date TIMESTAMP,
             is_new BOOLEAN,
             is_old BOOLEAN,
-            is_clicked BOOLEAN DEFAULT 0  
+            is_clicked BOOLEAN DEFAULT 0,
+            application_attempts INTEGER DEFAULT 0,
+            last_application_date TIMESTAMP,
+            application_success BOOLEAN
         )
         ''')
+        
+        # Create application history table
+        c.execute('''
+        CREATE TABLE IF NOT EXISTS application_history (
+            id INTEGER PRIMARY KEY,
+            job_id INTEGER,
+            application_date TIMESTAMP,
+            success BOOLEAN,
+            site_type TEXT,
+            error_message TEXT,
+            FOREIGN KEY (job_id) REFERENCES jobs (id)
+        )
+        ''')
+        
         conn.commit()
     except sqlite3.Error as e:
         logging.error(f"Database initialization error: {e}")
     finally:
         conn.close()
 
+def get_applied_job_links():
+    """Get links of all successfully applied jobs"""
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        c = conn.cursor()
+        c.execute('''
+            SELECT link FROM jobs 
+            WHERE status = 'applied' 
+            AND application_success = 1
+        ''')
+        applied_links = set(row[0] for row in c.fetchall())
+        conn.close()
+        return applied_links
+    except sqlite3.Error as e:
+        logging.error(f"Error fetching applied links: {e}")
+        return set()
+
+def record_application_attempt(job_id: int, success: bool, site_type: str, error_message: str = None):
+    """Record an application attempt in the history"""
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        c = conn.cursor()
+        
+        # Update jobs table
+        c.execute('''
+            UPDATE jobs 
+            SET application_attempts = application_attempts + 1,
+                last_application_date = ?,
+                application_success = ?,
+                status = ?
+            WHERE id = ?
+        ''', (datetime.now(), success, 'applied' if success else 'failed', job_id))
+        
+        # Add to history
+        c.execute('''
+            INSERT INTO application_history 
+            (job_id, application_date, success, site_type, error_message)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (job_id, datetime.now(), success, site_type, error_message))
+        
+        conn.commit()
+    except sqlite3.Error as e:
+        logging.error(f"Error recording application attempt: {e}")
+    finally:
+        conn.close()
+
+def get_application_stats():
+    """Get detailed application statistics"""
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        c = conn.cursor()
+        
+        # Get overall stats
+        c.execute('''
+            SELECT 
+                COUNT(*) as total_applications,
+                SUM(CASE WHEN application_success = 1 THEN 1 ELSE 0 END) as successful_applications,
+                SUM(CASE WHEN application_success = 0 THEN 1 ELSE 0 END) as failed_applications,
+                SUM(application_attempts) as total_attempts
+            FROM jobs 
+            WHERE status IN ('applied', 'failed')
+        ''')
+        
+        stats = c.fetchone()
+        
+        # Get stats by site
+        c.execute('''
+            SELECT 
+                site_type,
+                COUNT(*) as attempts,
+                SUM(CASE WHEN success = 1 THEN 1 ELSE 0 END) as successes
+            FROM application_history
+            GROUP BY site_type
+        ''')
+        
+        site_stats = c.fetchall()
+        
+        conn.close()
+        
+        return {
+            'overall': {
+                'total_applications': stats[0],
+                'successful_applications': stats[1],
+                'failed_applications': stats[2],
+                'total_attempts': stats[3]
+            },
+            'by_site': {
+                row[0]: {'attempts': row[1], 'successes': row[2]}
+                for row in site_stats
+            }
+        }
+    except sqlite3.Error as e:
+        logging.error(f"Error getting application stats: {e}")
+        return None
+
 def advanced_job_scoring(title, description):
     """
-    Enhanced job scoring mechanism with weighted keyword matching
+    Enhanced scoring system for job relevance
     """
     score = 0
-    total_keywords = (
-        KEYWORDS['core'] + 
-        KEYWORDS['specializations'] + 
-        KEYWORDS['job_titles'] + 
-        KEYWORDS['domains']
-    )
+    title_lower = title.lower()
+    desc_lower = description.lower()
+    
+    # Check for excluded keywords first
+    for excluded in EXCLUDED_KEYWORDS:
+        if excluded in title_lower:
+            # Special case for software architect
+            if excluded == "architecte" and "logiciel" in title_lower:
+                continue
+            return 0
 
-    # Case-insensitive matching with additional scoring
-    for category, weight in [
-        (KEYWORDS['core'], 3),
-        (KEYWORDS['specializations'], 5),
-        (KEYWORDS['job_titles'], 4),
-        (KEYWORDS['domains'], 2)
-    ]:
-        for keyword in category:
-            # Count occurrences with case-insensitive matching
-            title_matches = len(re.findall(rf'\b{re.escape(keyword)}\b', title, re.IGNORECASE))
-            desc_matches = len(re.findall(rf'\b{re.escape(keyword)}\b', description, re.IGNORECASE))
-            
-            # Weighted scoring
-            score += (title_matches * weight * 2) + (desc_matches * weight)
+    # Score based on core keywords (highest weight)
+    for keyword in KEYWORDS['core']:
+        if keyword in title_lower:
+            score += 5
+        if keyword in desc_lower:
+            score += 3
+
+    # Score based on your specific technologies
+    for keyword in KEYWORDS['specializations']:
+        if keyword in title_lower:
+            score += 4
+        if keyword in desc_lower:
+            score += 2
+
+    # Score based on exact job titles
+    for keyword in KEYWORDS['job_titles']:
+        if keyword in title_lower:
+            score += 6
+        if keyword in desc_lower:
+            score += 3
+
+    # Score based on relevant domains
+    for keyword in KEYWORDS['domains']:
+        if keyword in title_lower:
+            score += 3
+        if keyword in desc_lower:
+            score += 1
+
+    # Bonus points for key combinations
+    if ("symfony" in title_lower and "php" in title_lower) or \
+       ("react" in title_lower and "javascript" in title_lower) or \
+       ("full stack" in title_lower or "fullstack" in title_lower):
+        score += 5
+
+    # Bonus for junior positions
+    if "junior" in title_lower or "débutant" in title_lower:
+        score += 3
 
     return score
 
+def should_exclude_job(title, description):
+    """
+    Check if a job should be excluded based on title and description
+    """
+    title_lower = title.lower()
+    desc_lower = description.lower()
+    
+    # Check for excluded keywords
+    for keyword in EXCLUDED_KEYWORDS:
+        if keyword.lower() in title_lower:
+            logging.info(f"Excluding job due to keyword '{keyword}' in title: {title}")
+            return True
+    
+    # Check for experience requirements in description
+    experience_patterns = [
+        r'(\d+)[\s-]*ans? d\'expérience',
+        r'expérience .*?(\d+)[\s-]*ans?',
+        r'(\d+)[\s-]*years? experience',
+        r'experience .*?(\d+)[\s-]*years?'
+    ]
+    
+    for pattern in experience_patterns:
+        match = re.search(pattern, desc_lower)
+        if match:
+            years = int(match.group(1))
+            if years > 5:  # Exclude jobs requiring more than 5 years experience
+                logging.info(f"Excluding job due to high experience requirement ({years} years): {title}")
+                return True
+    
+    return False
+
+
 def filter_jobs(jobs):
     """
-    Advanced job filtering with detailed scoring and logging
+    Filter jobs using the enhanced scoring system
     """
     scored_jobs = []
+    
     for job in jobs:
         title, link, publish_date, location, experience, description = job
+        
+        # Skip jobs with excluded terms in title
+        if should_exclude_job(title, description):
+            continue
+            
         score = advanced_job_scoring(title, description)
         
-        if score > 5:  # Adjust threshold as needed
+        # Only include jobs with a minimum relevance score
+        if score > 8:  # Adjust threshold as needed
             scored_jobs.append((job, score))
             logging.info(f"Matched Job - Title: {title}, Score: {score}")
 
@@ -182,42 +455,68 @@ def filter_jobs(jobs):
 
 def parse_relative_date(date_str):
     """
-    Enhanced date parsing with multiple format support
+    Enhanced date parsing with support for multiple formats and relative times
     """
-    date_str = date_str.strip()
+    date_str = date_str.strip().lower()
     now = datetime.now()
 
-    # Direct month parsing for tunisie travail format
+    # Direct month mapping for various formats
     month_mapping = {
-        'Jan': 1, 'Fev': 2, 'Mar': 3, 'Avr': 4, 'Mai': 5, 'Juin': 6,
-        'Juil': 7, 'Août': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12
+        'jan': 1, 'fev': 2, 'mar': 3, 'avr': 4, 'mai': 5, 'juin': 6,
+        'juil': 7, 'août': 8, 'sep': 9, 'oct': 10, 'nov': 11, 'dec': 12,
+        'janvier': 1, 'février': 2, 'mars': 3, 'avril': 4, 'mai': 5, 'juin': 6,
+        'juillet': 7, 'aout': 8, 'septembre': 9, 'octobre': 10, 'novembre': 11, 'décembre': 12
     }
 
     try:
-        # Try parsing standard formats
+        # Handle "Il y a X minutes/heures/jours/mois"
+        if "il y a" in date_str or "depuis" in date_str:
+            number = int(re.search(r"(\d+)", date_str).group(1))
+            
+            if "minute" in date_str:
+                return (now - timedelta(minutes=number)).date()
+            elif "heure" in date_str:
+                return (now - timedelta(hours=number)).date()
+            elif "jour" in date_str:
+                return (now - timedelta(days=number)).date()
+            elif "mois" in date_str:
+                return (now - timedelta(days=number * 30)).date()
+            elif "semaine" in date_str:
+                return (now - timedelta(weeks=number)).date()
+        
+        # Handle standard date format "dd/mm/yyyy"
         try:
             return datetime.strptime(date_str, "%d/%m/%Y").date()
         except ValueError:
             pass
 
-        # Try parsing relative time like "Il y a X jours"
-        days_match = re.search(r"(\d+)", date_str)
-        if days_match:
-            days_ago = int(days_match.group(1))
-            return (now - timedelta(days=days_ago)).date()
+        # Handle "Month, Year" format
+        for month_name in month_mapping.keys():
+            if month_name in date_str:
+                year_match = re.search(r'\d{4}', date_str)
+                if year_match:
+                    year = int(year_match.group())
+                    month = month_mapping[month_name]
+                    return datetime(year, month, 1).date()
 
-        # Try parsing month format like "Déc, 2024"
-        month_match = re.match(r"(\w+),\s*(\d{4})", date_str)
-        if month_match:
-            month_abbr, year = month_match.groups()
-            month_num = month_mapping.get(month_abbr[:3].capitalize(), now.month)
-            return datetime(int(year), month_num, 1).date()
+        # Handle relative dates without "Il y a" (e.g., "2 jours")
+        number_match = re.search(r"(\d+)", date_str)
+        if number_match:
+            number = int(number_match.group(1))
+            if "jour" in date_str:
+                return (now - timedelta(days=number)).date()
+            elif "mois" in date_str:
+                return (now - timedelta(days=number * 30)).date()
+            elif "semaine" in date_str:
+                return (now - timedelta(weeks=number)).date()
+
+        # If no pattern matches, log it and return current date
+        logging.warning(f"No pattern matched for date string: {date_str}")
+        return now.date()
 
     except Exception as e:
         logging.warning(f"Date parsing failed for {date_str}: {e}")
         return now.date()
-
-    return now.date()
 
 def fetch_job_details(url, site):
     try:
@@ -232,57 +531,175 @@ def fetch_job_details(url, site):
 
     try:
         if site == "keejob":
-            desc_section = soup.find("div", class_="block_a")
+            # Get description from the main content area
+            desc_section = soup.find("div", class_="block_a", style=lambda x: x and "padding: 15px 30px 5px" in x)
             if desc_section:
+                # Remove social buttons and meta sections
+                for meta in desc_section.find_all("div", class_="meta_a"):
+                    meta.decompose()
                 description = desc_section.get_text(strip=True)
-            publish_date_section = soup.find("i", class_="fa-clock-o")
-            if publish_date_section:
-                publish_date = publish_date_section.next_sibling.strip()
-            location_section = soup.find("i", class_="fa-map-marker")
-            if location_section:
-                location = location_section.next_sibling.strip()
 
-        elif site == "optioncarriere":
+            # Get metadata from details section
+            details_div = soup.find("div", class_="text", style="margin-bottom:20px;")
+            if details_div:
+                meta_sections = details_div.find_all("div", class_="meta")
+                details = {}
+                for meta in meta_sections:
+                    label = meta.find("b")
+                    if label:
+                        key = label.text.strip(":").strip().lower()
+                        value = meta.get_text(strip=True).replace(label.text, "").strip()
+                        details[key] = value
+
+                # Extract location
+                location = details.get("lieu de travail", "N/A")
+                
+                # Build experience string
+                exp_parts = []
+                if "type de poste" in details:
+                    exp_parts.append(details["type de poste"])
+                if "expérience" in details:
+                    exp_parts.append(details["expérience"])
+                if "étude" in details:
+                    exp_parts.append(f"Niveau: {details['étude']}")
+                if "rémunération proposée" in details:
+                    exp_parts.append(f"Salaire: {details['rémunération proposée']}")
+                
+                experience = " | ".join(exp_parts) if exp_parts else "N/A"
+
+                # Add publish date
+                if "publiée le" in details:
+                    publish_date = details["publiée le"]
+
+                # Add company info to description if available
+                company = details.get("entreprise", "").strip()
+                if company and company != "N/A":
+                    description = f"Entreprise: {company} | {description}"
+                    
+    except Exception as e:
+        logging.error(f"Error parsing job details for site {site}: {e}")
+
+    if site == "optioncarriere":
             header = soup.find("header")
             if header:
-                description_section = header.find_next("section", class_="content")
-                description = description_section.get_text(strip=True) if description_section else "N/A"
+                # Get description
+                content_section = soup.find("section", class_="content")
+                if content_section:
+                    description = content_section.get_text(strip=True)
+                else:
+                    description = "N/A"
 
-                publish_date_section = header.find("span", class_="badge")
-                if publish_date_section:
-                    relative_time = publish_date_section.get_text(strip=True)
-                    publish_date = parse_relative_date(relative_time)
+                # Get company name
+                company_section = header.find("p", class_="company")
+                if company_section:
+                    company_name = company_section.get_text(strip=True)
+                    description = f"Company: {company_name} | {description}"
 
-                location_section = header.find("svg", {"class": "icon"})
-                if location_section:
-                    location = location_section.find_next("span").get_text(strip=True)
+                # Get location and contract details
+                details_list = header.find("ul", class_="details")
+                if details_list:
+                    location = "N/A"
+                    contract_info = []
+                    
+                    for detail in details_list.find_all("li"):
+                        # Location
+                        if detail.find("svg", {"class": "icon"}):
+                            location_span = detail.find("span")
+                            if location_span:
+                                location = location_span.get_text(strip=True)
+                        # Contract type and work time
+                        else:
+                            contract_text = detail.get_text(strip=True)
+                            if contract_text:
+                                contract_info.append(contract_text)
+                    
+                    if contract_info:
+                        experience = " | ".join(contract_info)
+                    else:
+                        experience = "N/A"
+                else:
+                    location = "N/A"
+                    experience = "N/A"
 
-        elif site == "tunisietravail":
+                # Get publish date
+                publish_date = datetime.now().date()
+                tags = header.find("ul", class_="tags")
+                if tags:
+                    date_badge = tags.find("span", class_="badge", string=lambda x: "jours" in str(x))
+                    if date_badge:
+                        date_text = date_badge.get_text(strip=True)
+                        if "jours" in date_text:
+                            try:
+                                days = int(re.search(r"(\d+)", date_text).group(1))
+                                publish_date = datetime.now().date() - timedelta(days=days)
+                            except (ValueError, AttributeError) as e:
+                                logging.error(f"Error parsing date from '{date_text}': {e}")
+
+    elif site == "tunisietravail":
+        try:
+            # Get description from PostContent
             desc_section = soup.find("div", class_="PostContent")
             if desc_section:
+                # Remove script tags and ads
+                for script in desc_section.find_all(["script", "ins"]):
+                    script.decompose()
                 description = desc_section.get_text(strip=True)
+            else:
+                description = "N/A"
 
-            publish_date_section = soup.find("p", class_="PostDate")
-            if publish_date_section:
-                publish_date = publish_date_section.find("strong", class_="month")
-                publish_date = publish_date.get_text(strip=True) if publish_date else "N/A"
+            # Get location and company info
+            info_section = soup.find("div", class_="PostContent")
+            if info_section:
+                # Extract location
+                location_match = re.search(r"Ville\s*›\s*([^›\n]+)", info_section.text)
+                location = location_match.group(1).strip() if location_match else "N/A"
+                
+                # Extract company
+                company_match = re.search(r"Entreprise\s*›\s*([^›\n]+)", info_section.text)
+                company = company_match.group(1).strip() if company_match else "N/A"
+                
+                # Extract experience requirements from description
+                exp_match = re.search(r"expérience\s*[d\']*au moins\s*(\d+)\s*ans?", description, re.IGNORECASE)
+                experience = f"{exp_match.group(1)} ans d'expérience" if exp_match else "N/A"
+                
+                # Add company to description if found
+                if company != "N/A":
+                    description = f"Entreprise: {company} | {description}"
+            else:
+                location = "N/A"
+                experience = "N/A"
 
-            location_section = soup.find("p", class_="PostInfo")
-            if location_section:
-                location_links = location_section.find_all("a")
-                possible_locations = [
-                    link.get_text(strip=True)
-                    for link in location_links
-                    if "category" not in link.get('href', '')
-                ]
-                location = possible_locations[0] if possible_locations else "N/A"
-    except Exception as e:
-        logging.error(f"Error parsing job details from {site} ({url}): {e}")
+            # Extract contract type if mentioned
+            if "CDI" in description:
+                experience = f"CDI | {experience}"
+            elif "CDD" in description:
+                experience = f"CDD | {experience}"
+
+            return description, None, location, experience
+
+        except Exception as e:
+            logging.error(f"Error parsing tunisietravail job details: {str(e)}")
+            return "N/A", None, "N/A", "N/A"
 
     return description, publish_date, location, experience
 
-def fetch_jobs_from_optioncarriere(keyword):
-    """Enhanced optioncarriere job fetching with better error handling"""
+
+def get_existing_job_links():
+    """Get all existing job links from the database"""
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        c = conn.cursor()
+        c.execute('SELECT link FROM jobs')
+        existing_links = set(row[0] for row in c.fetchall())
+        conn.close()
+        return existing_links
+    except sqlite3.Error as e:
+        logging.error(f"Error fetching existing links: {e}")
+        return set()
+
+
+def fetch_jobs_from_optioncarriere(keyword, existing_links):
+    """Enhanced optioncarriere job fetching with duplicate prevention"""
     url = BASE_URLS["optioncarriere"].format(query=keyword)
     logging.info(f"Fetching jobs from optioncarriere for keyword: {keyword}")
     
@@ -293,97 +710,161 @@ def fetch_jobs_from_optioncarriere(keyword):
         jobs = []
 
         job_listings = soup.find_all("article", class_="job")
-        logging.info(f"Found {len(job_listings)} potential jobs for '{keyword}' on optioncarriere")
-
+        new_listings = 0
+        skipped_listings = 0
+        
         for job in job_listings:
             try:
-                title_tag = job.find("h2").find("a")
-                if not title_tag:
+                # Extract job title and link
+                title_element = job.find("h2").find("a")
+                if not title_element:
                     continue
                 
-                title = title_tag.text.strip()
-                link = f"https://www.optioncarriere.tn{title_tag['href']}"
-                logging.info(f"Processing job: {title}")
+                title = title_element.get_text(strip=True)
+                link = f"https://www.optioncarriere.tn{title_element['href']}"
 
-                location_section = job.find("ul", class_="location")
-                location = location_section.find("li").text.strip() if location_section else "N/A"
+                # Skip if job already exists in database
+                if link in existing_links:
+                    skipped_listings += 1
+                    logging.debug(f"Skipping existing job: {title}")
+                    continue
 
-                publish_date_section = job.find("span", class_="badge")
-                publish_date = datetime.now().date()
-                if publish_date_section:
-                    publish_date = parse_relative_date(publish_date_section.text.strip())
+                # Skip if job doesn't match criteria
+                if should_exclude_job(title, ""):
+                    logging.info(f"Skipping excluded job: {title}")
+                    continue
 
-                desc_section = job.find("div", class_="desc")
-                description = desc_section.text.strip() if desc_section else "N/A"
+                company_element = job.find("p", class_="company")
+                company = company_element.get_text(strip=True) if company_element else "N/A"
 
-                jobs.append((title, link, publish_date, location, "N/A", description))
-                logging.info(f"Successfully processed: {title} | Location: {location}")
+                location_element = job.find("ul", class_="location").find("li")
+                location = location_element.get_text(strip=True) if location_element else "N/A"
+
+                date_element = job.find("footer").find("span", class_="badge")
+                if date_element:
+                    date_text = date_element.get_text(strip=True)
+                    if "jours" in date_text:
+                        days = int(re.search(r"(\d+)", date_text).group(1))
+                        if days > 15:
+                            continue
+                    publish_date = parse_relative_date(date_text)
+                else:
+                    publish_date = datetime.now().date()
+
+                # Only fetch details for new jobs
+                description, _, _, experience = fetch_job_details(link, "optioncarriere")
+                
+                if company != "N/A":
+                    description = f"Company: {company} | {description}"
+
+                desc_element = job.find("div", class_="desc")
+                if desc_element:
+                    preview = desc_element.get_text(strip=True)
+                    description = f"{preview} | {description}" if description != "N/A" else preview
+
+                contract_type = job.find("li", string=lambda text: text and ("CDI" in text or "CDD" in text))
+                if contract_type:
+                    contract_text = contract_type.get_text(strip=True)
+                    experience = f"{contract_text} | {experience}" if experience != "N/A" else contract_text
+
+                jobs.append((title, link, publish_date, location, experience, description))
+                new_listings += 1
 
             except Exception as e:
                 logging.error(f"Error parsing job from optioncarriere: {str(e)}")
                 continue
 
+        logging.info(f"Optioncarriere summary for {keyword}: {new_listings} new jobs, {skipped_listings} existing jobs skipped")
         return jobs
 
     except Exception as e:
         logging.error(f"Failed to fetch jobs from optioncarriere for '{keyword}': {str(e)}")
         return []
 
-def fetch_jobs_from_tunisietravail(keyword):
-    """Enhanced tunisietravail job fetching"""
-    url = BASE_URLS["tunisietravail"].format(query=keyword)
-    logging.info(f"Fetching jobs from tunisietravail for keyword: {keyword}")
+def fetch_jobs_from_tunisietravail(keyword, existing_links):
+    """Enhanced tunisietravail job fetching with duplicate prevention"""
+    base_url = "https://www.tunisietravail.net/category/offres-d-emploi-et-recrutement/it/"
+    
+    it_categories = [
+        "developpeur/",
+        "developpeur-net-c-vb-java-jee/",
+        "developpeur-web/",
+        "ingenieur/"
+    ]
+    
+    jobs = []
+    new_listings = 0
+    skipped_listings = 0
+    logging.info(f"Fetching IT jobs from tunisietravail")
     
     try:
         session = create_session()
-        response = make_request(url, session)
-        soup = BeautifulSoup(response.text, "html.parser")
-        jobs = []
-
-        job_listings = soup.find_all("div", class_="Post")
-        logging.info(f"Found {len(job_listings)} potential jobs for '{keyword}' on tunisietravail")
-
-        for job in job_listings:
+        
+        for category in it_categories:
+            category_url = base_url + category
             try:
-                title_tag = job.find("a", class_="h1titleall")
-                if not title_tag:
-                    continue
+                response = make_request(category_url, session)
+                soup = BeautifulSoup(response.text, "html.parser")
+                
+                job_listings = soup.find_all("div", class_="Post")
+                logging.info(f"Found {len(job_listings)} potential jobs in category {category}")
+                
+                for job in job_listings:
+                    try:
+                        title_tag = job.find("a", class_="h1titleall")
+                        if not title_tag:
+                            continue
+                        
+                        title = title_tag.text.strip()
+                        link = title_tag["href"]
 
-                title = title_tag.text.strip()
-                link = title_tag["href"]
-                logging.info(f"Processing job: {title}")
-
-                date_section = job.find("p", class_="PostDateIndexRed")
-                publish_date = datetime.now().date()
-                if date_section:
-                    month_tag = date_section.find("strong", class_="month")
-                    if month_tag:
-                        publish_date = parse_relative_date(month_tag.text.strip())
-
-                location_section = job.find("p", class_="PostInfo")
-                location = "N/A"
-                if location_section:
-                    location_links = [link for link in location_section.find_all("a") 
-                                    if "category" not in link.get('href', '')]
-                    if location_links:
-                        location = location_links[0].text.strip()
-
-                description, _, _, experience = fetch_job_details(link, "tunisietravail")
-                jobs.append((title, link, publish_date.strftime("%Y-%m-%d"), location, experience, description))
-                logging.info(f"Successfully processed: {title} | Location: {location}")
-
+                        # Skip if job already exists
+                        if link in existing_links:
+                            skipped_listings += 1
+                            logging.debug(f"Skipping existing job: {title}")
+                            continue
+                        
+                        # Skip if job title doesn't match keywords
+                        if not any(kw.lower() in title.lower() for kw in KEYWORDS['core'] + KEYWORDS['job_titles']):
+                            continue
+                        
+                        date_section = job.find("p", class_="PostDateIndex")
+                        publish_date = datetime.now().date()
+                        if date_section:
+                            month_tag = date_section.find("strong", class_="month")
+                            if month_tag:
+                                month_text = month_tag.text.strip()
+                                try:
+                                    publish_date = datetime.strptime(month_text, "%b, %Y").date()
+                                except ValueError:
+                                    publish_date = parse_relative_date(month_text)
+                        
+                        desc_preview = job.find("div", style=lambda x: x and "line-height:18px" in x)
+                        preview_text = desc_preview.text.strip() if desc_preview else ""
+                        
+                        description, _, location, experience = fetch_job_details(link, "tunisietravail")
+                        full_description = f"{preview_text} | {description}" if description != "N/A" else preview_text
+                        
+                        jobs.append((title, link, publish_date.strftime("%Y-%m-%d"), location, experience, full_description))
+                        new_listings += 1
+                        
+                    except Exception as e:
+                        logging.error(f"Error parsing job listing: {str(e)}")
+                        continue
+                        
             except Exception as e:
-                logging.error(f"Error parsing job from tunisietravail: {str(e)}")
+                logging.error(f"Error fetching category {category}: {str(e)}")
                 continue
 
+        logging.info(f"Tunisietravail summary: {new_listings} new jobs, {skipped_listings} existing jobs skipped")
         return jobs
-
+        
     except Exception as e:
-        logging.error(f"Failed to fetch jobs from tunisietravail for '{keyword}': {str(e)}")
+        logging.error(f"Failed to fetch jobs from tunisietravail: {str(e)}")
         return []
 
-def fetch_jobs_from_keejob(keyword):
-    """Enhanced keejob job fetching"""
+def fetch_jobs_from_keejob(keyword, existing_links):
+    """Enhanced keejob job fetching with duplicate prevention"""
     url = BASE_URLS["keejob"].format(query=keyword)
     logging.info(f"Fetching jobs from keejob for keyword: {keyword}")
     
@@ -392,42 +873,64 @@ def fetch_jobs_from_keejob(keyword):
         response = make_request(url, session)
         soup = BeautifulSoup(response.text, "html.parser")
         jobs = []
+        new_listings = 0
+        skipped_listings = 0
 
         job_listings = soup.find_all("div", class_="block_white_a")
         logging.info(f"Found {len(job_listings)} potential jobs for '{keyword}' on keejob")
 
         for job in job_listings:
             try:
-                title_tag = job.find("a", style=True)
+                title_tag = job.find("a", style="color: #005593;")
                 if not title_tag:
                     continue
 
                 title = title_tag.text.strip()
                 link = f"https://www.keejob.com{title_tag['href']}"
-                logging.info(f"Processing job: {title}")
+
+                # Skip if job already exists
+                if link in existing_links:
+                    skipped_listings += 1
+                    logging.debug(f"Skipping existing job: {title}")
+                    continue
+                
+                # Skip if job title doesn't match keywords
+                if not any(kw.lower() in title.lower() for kw in KEYWORDS['core'] + KEYWORDS['job_titles']):
+                    continue
+
+                content_div = job.find("div", class_="content")
+                company = "N/A"
+                if content_div:
+                    company_text = content_div.find("div", class_="span12").get_text(strip=True)
+                    if company_text:
+                        company = company_text.split('|')[0].strip()
 
                 location_tag = job.find("i", class_="fa-map-marker")
                 location = location_tag.next_sibling.strip() if location_tag else "N/A"
 
-                date_tag = job.find("i", class_="fa-clock-o")
+                date_div = job.find("div", class_="meta_a")
                 publish_date = datetime.now().date()
-                if date_tag and date_tag.next_sibling:
-                    publish_date = parse_relative_date(date_tag.next_sibling.strip())
+                if date_div:
+                    date_text = date_div.find("i", class_="fa-clock-o").next_sibling.strip()
+                    publish_date = datetime.strptime(date_text, "%d/%m/%Y").date()
 
                 description, _, _, experience = fetch_job_details(link, "keejob")
+                
                 jobs.append((title, link, publish_date, location, experience, description))
-                logging.info(f"Successfully processed: {title} | Location: {location}")
+                new_listings += 1
 
             except Exception as e:
                 logging.error(f"Error parsing job from keejob: {str(e)}")
                 continue
 
+        logging.info(f"Keejob summary for {keyword}: {new_listings} new jobs, {skipped_listings} existing jobs skipped")
         return jobs
 
     except Exception as e:
         logging.error(f"Failed to fetch jobs from keejob for '{keyword}': {str(e)}")
         return []
-
+    
+    
 def save_job_to_db(title, link, publish_date, location, experience, description, status):
     try:
         conn = sqlite3.connect(DB_FILE)
@@ -483,8 +986,13 @@ def update_jobs_with_logging():
     
     
 def update_jobs():
-    """Enhanced job update process with detailed logging"""
+    """Enhanced job update process with duplicate prevention"""
     logging.info("Starting job update process...")
+    
+    # Get existing jobs from database first
+    existing_links = get_existing_job_links()
+    logging.info(f"Found {len(existing_links)} existing jobs in database")
+    
     all_keywords = set(
         KEYWORDS['core'] + 
         KEYWORDS['specializations'] + 
@@ -493,25 +1001,31 @@ def update_jobs():
     )
 
     total_jobs_added = 0
+    total_jobs_skipped = 0
     total_jobs_processed = 0
     failed_keywords = []
 
     for keyword in all_keywords:
         try:
             logging.info(f"Processing keyword: {keyword}")
-            jobs_optioncarriere = fetch_jobs_from_optioncarriere(keyword)
-            jobs_tunisietravail = fetch_jobs_from_tunisietravail(keyword)
-            jobs_keejob = fetch_jobs_from_keejob(keyword)
+            
+            # Pass existing_links to each fetch function
+            jobs_optioncarriere = fetch_jobs_from_optioncarriere(keyword, existing_links)
+            jobs_tunisietravail = fetch_jobs_from_tunisietravail(keyword, existing_links)
+            jobs_keejob = fetch_jobs_from_keejob(keyword, existing_links)
 
             all_jobs = jobs_optioncarriere + jobs_tunisietravail + jobs_keejob
             total_jobs_processed += len(all_jobs)
             
             filtered_jobs = filter_jobs(all_jobs)
-            logging.info(f"Found {len(filtered_jobs)} relevant jobs for keyword '{keyword}'")
-
+            
             for job in filtered_jobs:
-                save_job_to_db(*job, "new")
-                total_jobs_added += 1
+                if job[1] not in existing_links:  # Check link isn't in existing set
+                    save_job_to_db(*job, "new")
+                    total_jobs_added += 1
+                    existing_links.add(job[1])  # Add to existing set to prevent duplicates
+                else:
+                    total_jobs_skipped += 1
 
         except Exception as e:
             logging.error(f"Error processing keyword {keyword}: {e}")
@@ -519,9 +1033,13 @@ def update_jobs():
 
     logging.info("Job update summary:")
     logging.info(f"Total jobs processed: {total_jobs_processed}")
-    logging.info(f"Total jobs added: {total_jobs_added}")
+    logging.info(f"New jobs added: {total_jobs_added}")
+    logging.info(f"Existing jobs skipped: {total_jobs_skipped}")
     if failed_keywords:
         logging.warning(f"Failed keywords: {', '.join(failed_keywords)}")
+
+    return total_jobs_added
+
 
 if __name__ == "__main__":
     initialize_db()
